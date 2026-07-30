@@ -532,6 +532,43 @@ class TestIsErrorResponse:
         middleware = LoggingMiddleware()
         assert middleware._is_error_response(ToolResult(content=[])) is False
 
+    def test_null_error_type_not_detected_as_error(self) -> None:
+        """A success payload declaring a nullable error_type (e.g.
+        ExecuteSqlResponse) is not detected as an error."""
+        middleware = LoggingMiddleware()
+        success_json = (
+            '{"status": "success", "data": [{"a": 1}],'
+            ' "error": null, "error_type": null}'
+        )
+        result = ToolResult(content=[mt.TextContent(type="text", text=success_json)])
+        assert middleware._is_error_response(result) is False
+
+    def test_non_null_error_type_detected_as_error(self) -> None:
+        """A payload with a non-null error_type is detected as an error."""
+        middleware = LoggingMiddleware()
+        error_json = '{"error": "syntax error", "error_type": "SQLError"}'
+        result = ToolResult(content=[mt.TextContent(type="text", text=error_json)])
+        assert middleware._is_error_response(result) is True
+
+    def test_nested_error_type_detected_as_error(self) -> None:
+        """A payload nesting the error object (e.g. generate_chart's
+        ChartGenerationError) is detected as an error."""
+        middleware = LoggingMiddleware()
+        error_json = (
+            '{"success": false, "chart": null, '
+            '"error": {"error_type": "validation_error"}}'
+        )
+        result = ToolResult(content=[mt.TextContent(type="text", text=error_json)])
+        assert middleware._is_error_response(result) is True
+
+    def test_malformed_content_not_detected_as_error(self) -> None:
+        """Non-JSON, non-dict and empty payloads don't raise and are
+        not detected as errors."""
+        middleware = LoggingMiddleware()
+        for text in ['{"error_type": ', "", '["error_type"]', "null", "not json"]:
+            result = ToolResult(content=[mt.TextContent(type="text", text=text)])
+            assert middleware._is_error_response(result) is False
+
     @patch("superset.mcp_service.middleware.event_logger")
     @patch("superset.mcp_service.middleware.get_user_id", return_value=42)
     @pytest.mark.asyncio
