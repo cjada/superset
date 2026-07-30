@@ -202,6 +202,15 @@ def test_is_test():
         ("0", False),
         ("foo", False),
         (None, False),
+        ("", False),
+        (" true ", True),
+        ("true\n", True),
+        (" 1", True),
+        (" yes ", True),
+        ("\tOn\t", True),
+        (" false ", False),
+        (" foo ", False),
+        ("   ", False),
     ],
 )
 def test_parse_boolean_string(test_input: Optional[str], expected: bool):
