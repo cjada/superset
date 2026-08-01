@@ -46,7 +46,10 @@ def cum(
     """
     columns = columns or {}
     df_cum = df.loc[:, columns.keys()]
-    df_cum = df_cum.fillna(0)
+    if operator == "sum":
+        # zero-filling keeps historical cumsum behavior; other operators must
+        # propagate nulls the way pandas does
+        df_cum = df_cum.fillna(0)
     operation = "cum" + operator
     if operation not in ALLOWLIST_CUMULATIVE_FUNCTIONS or not hasattr(
         df_cum, operation

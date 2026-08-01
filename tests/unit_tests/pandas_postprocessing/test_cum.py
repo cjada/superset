@@ -176,3 +176,25 @@ def test_cum_after_pivot_with_multiple_metrics():
             }
         )
     )
+
+
+def test_cum_with_nulls_propagates_for_non_sum_operators():
+    df = pd.DataFrame({"y": [5.0, None, 7.0]})
+
+    # cumsum keeps zero-filling nulls
+    assert series_to_list(pp.cum(df=df, columns={"y": "y2"}, operator="sum")["y2"]) == [
+        5.0,
+        5.0,
+        12.0,
+    ]
+
+    for operator, expected in (
+        ("min", [5.0, None, 5.0]),
+        ("max", [5.0, None, 7.0]),
+        ("prod", [5.0, None, 35.0]),
+    ):
+        post_df = pp.cum(df=df, columns={"y": "y2"}, operator=operator)
+        assert post_df["y2"].isna().tolist() == [False, True, False]
+        assert post_df["y2"].dropna().tolist() == [
+            value for value in expected if value is not None
+        ]
