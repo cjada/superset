@@ -107,6 +107,27 @@ def test_rolling():
         )
 
 
+def test_rolling_negative_window():
+    with pytest.raises(InvalidPostProcessingError, match="Window must be > 0"):
+        pp.rolling(
+            df=timeseries_df,
+            columns={"y": "y"},
+            rolling_type="sum",
+            window=-1,
+        )
+
+
+def test_rolling_negative_min_periods():
+    with pytest.raises(InvalidPostProcessingError, match="min_periods must be >= 0"):
+        pp.rolling(
+            df=timeseries_df,
+            columns={"y": "y"},
+            rolling_type="sum",
+            window=2,
+            min_periods=-1,
+        )
+
+
 def test_rolling_min_periods_trims_correctly():
     pivot_df = pp.pivot(
         df=single_metric_df,

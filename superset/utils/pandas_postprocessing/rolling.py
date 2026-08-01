@@ -65,8 +65,10 @@ def rolling(  # pylint: disable=too-many-arguments
     kwargs: dict[str, Union[str, int]] = {}
     if window is None:
         raise InvalidPostProcessingError(_("Undefined window for rolling operation"))
-    if window == 0:
+    if window <= 0:
         raise InvalidPostProcessingError(_("Window must be > 0"))
+    if min_periods is not None and min_periods < 0:
+        raise InvalidPostProcessingError(_("min_periods must be >= 0"))
 
     kwargs["window"] = window
     if min_periods is not None:
