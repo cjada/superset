@@ -132,8 +132,21 @@ def test_resample_zero_fill_with_gaps():
             ),
             data={
                 "label": ["x", "y", 0, 0, "z", 0, "q"],
-                "y": [1.0, 2.0, 0, 0, 0, 0, 4.0],
+                "y": [1.0, 2.0, 0, 0, np.nan, 0, 4.0],
             },
+        )
+    )
+
+
+def test_resample_zero_fill_preserves_source_nulls():
+    df = pd.DataFrame(
+        index=pd.to_datetime(["2021-01-01", "2021-01-03"]), data={"m": [1.0, None]}
+    )
+    post_df = pp.resample(df=df, rule="1D", method="asfreq", fill_value=0)
+    assert post_df.equals(
+        pd.DataFrame(
+            index=pd.to_datetime(["2021-01-01", "2021-01-02", "2021-01-03"]),
+            data={"m": [1.0, 0.0, np.nan]},
         )
     )
 

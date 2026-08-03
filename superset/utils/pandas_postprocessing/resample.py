@@ -48,7 +48,6 @@ def resample(
 
     if method == "asfreq" and fill_value is not None:
         _df = df.resample(rule).asfreq(fill_value=fill_value)
-        _df = _df.fillna(fill_value)
     elif method == "linear":
         _df = df.resample(rule).interpolate()
     else:
