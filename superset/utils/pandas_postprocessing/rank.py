@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import pandas as pd
 
+from superset.utils.pandas_postprocessing.utils import validate_column_args
+
 
 def rank(
     df: pd.DataFrame,
@@ -31,7 +33,17 @@ def rank(
     :param metric: The metric to rank.
     :param group_by: The column to group by.
     :return: a flat DataFrame
+    :raises InvalidPostProcessingError: If the referenced columns are not available
     """
+    return _rank(df, metric=metric, group_by=group_by)
+
+
+@validate_column_args("metric", "group_by")
+def _rank(
+    df: pd.DataFrame,
+    metric: str,
+    group_by: str | None = None,
+) -> pd.DataFrame:
     if group_by:
         df["rank"] = df.groupby(group_by)[metric].rank(pct=True)
     else:
