@@ -53,3 +53,11 @@ def test_select():
     # select renamed column by new name
     with pytest.raises(InvalidPostProcessingError):
         select(df=timeseries_df, columns=["label_new"], rename={"label": "label_new"})
+
+    # exclude a column that does not exist
+    with pytest.raises(InvalidPostProcessingError):
+        select(df=timeseries_df, exclude=["not_a_column"])
+
+    # exclude a renamed column by its new name
+    with pytest.raises(InvalidPostProcessingError):
+        select(df=timeseries_df, rename={"label": "label_new"}, exclude=["label_new"])

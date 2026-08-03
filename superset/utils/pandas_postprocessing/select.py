@@ -21,7 +21,7 @@ from pandas import DataFrame
 from superset.utils.pandas_postprocessing.utils import validate_column_args
 
 
-@validate_column_args("columns", "drop", "rename")
+@validate_column_args("columns", "exclude", "rename")
 def select(
     df: DataFrame,
     columns: Optional[list[str]] = None,
