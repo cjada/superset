@@ -15,7 +15,9 @@
 # specific language governing permissions and limitations
 # under the License.
 import numpy as np
+import pytest
 
+from superset.exceptions import InvalidPostProcessingError
 from superset.utils import pandas_postprocessing as pp
 from tests.unit_tests.fixtures.dataframes import categories_df
 
@@ -52,3 +54,15 @@ def test_rank_single_cat():
 
     assert tmp_df["rank"].min() == 1.0 / len(tmp_df)
     assert tmp_df["rank"].max() == 1.0
+
+
+def test_rank_unknown_metric():
+    _categories_df = categories_df.copy(deep=True)
+    with pytest.raises(InvalidPostProcessingError):
+        pp.rank(_categories_df, "does_not_exist")
+
+
+def test_rank_unknown_group_by():
+    _categories_df = categories_df.copy(deep=True)
+    with pytest.raises(InvalidPostProcessingError):
+        pp.rank(_categories_df, "asc_idx", "does_not_exist")
