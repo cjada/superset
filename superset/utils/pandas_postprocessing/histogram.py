@@ -87,7 +87,17 @@ def histogram(
         histogram_df.columns = bin_edges_str
 
     if normalize:
-        histogram_df = histogram_df / histogram_df.values.sum()
+        # A cumulative histogram holds running totals, whose sum is meaningless;
+        # normalise against the number of observations so the result is a proper
+        # CDF whose final bin reaches the group's share of the total (1.0 for a
+        # single group). Non-cumulative counts already sum to the number of
+        # observations, so their denominator is unchanged.
+        total = (
+            np.histogram(df[column].dropna(), bins=bin_edges)[0].sum()
+            if cumulative
+            else histogram_df.values.sum()
+        )
+        histogram_df = histogram_df / total
 
     # reorder the columns to have the groupby columns first
     histogram_df = histogram_df.reset_index().loc[:, groupby + bin_edges_str]
