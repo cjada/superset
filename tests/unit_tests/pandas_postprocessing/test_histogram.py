@@ -101,24 +101,33 @@ def test_histogram_with_groupby_and_cumulative_and_normalize():
         "6.4 - 8.2",
         "8.2 - 10.0",
     ]
+    # cumulative counts divided by the total number of observations (10), so
+    # each group's final bin equals that group's share of the total and the
+    # two shares (0.6 and 0.4) sum to 1.0.
     assert result.values.tolist() == [
-        [
-            "A",
-            0.06666666666666667,
-            0.06666666666666667,
-            0.13333333333333333,
-            0.13333333333333333,
-            0.2,
-        ],
-        [
-            "B",
-            0.0,
-            0.06666666666666667,
-            0.06666666666666667,
-            0.13333333333333333,
-            0.13333333333333333,
-        ],
+        ["A", 0.2, 0.2, 0.4, 0.4, 0.6],
+        ["B", 0.0, 0.2, 0.2, 0.4, 0.4],
     ]
+
+
+def test_histogram_with_cumulative_and_normalize():
+    data_with_no_groupings = DataFrame(
+        {"a": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "b": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+    )
+    result = histogram(
+        data_with_no_groupings, "a", [], bins, cumulative=True, normalize=True
+    )
+    assert result.shape == (1, bins)
+    assert result.columns.tolist() == [
+        "1.0 - 2.8",
+        "2.8 - 4.6",
+        "4.6 - 6.4",
+        "6.4 - 8.2",
+        "8.2 - 10.0",
+    ]
+    # a normalised cumulative histogram is a CDF: the final bin reaches 1.0
+    assert result.values.tolist() == [[0.2, 0.4, 0.6, 0.8, 1.0]]
+    assert result.iloc[0, -1] == 1.0
 
 
 def test_histogram_with_non_numeric_column():
