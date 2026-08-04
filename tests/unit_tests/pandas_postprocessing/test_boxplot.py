@@ -172,6 +172,35 @@ def test_boxplot_percentile_incorrect_params():
         )
 
 
+@pytest.mark.parametrize("percentiles", [[10, 110], [-5, 90]])
+def test_boxplot_percentile_out_of_range(percentiles):
+    with pytest.raises(InvalidPostProcessingError, match=r"range \[0, 100\]"):
+        boxplot(
+            df=names_df,
+            groupby=["region"],
+            whisker_type=PostProcessingBoxplotWhiskerType.PERCENTILE,
+            metrics=["cars"],
+            percentiles=percentiles,
+        )
+
+
+def test_boxplot_percentile_boundary_values():
+    df = boxplot(
+        df=names_df,
+        groupby=["region"],
+        whisker_type=PostProcessingBoxplotWhiskerType.PERCENTILE,
+        metrics=["cars"],
+        percentiles=[0, 100],
+    )
+    assert len(df) == 4
+    assert series_to_list(df["cars__min"]) == series_to_list(
+        names_df.groupby("region")["cars"].min()
+    )
+    assert series_to_list(df["cars__max"]) == series_to_list(
+        names_df.groupby("region")["cars"].max()
+    )
+
+
 def test_boxplot_type_coercion():
     df = names_df
     df["cars"] = df["cars"].astype(str)

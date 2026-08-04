@@ -91,6 +91,10 @@ def boxplot(  # noqa: C901
                     "of which the first is lower than the second value"
                 )
             )
+        if not 0 <= percentiles[0] <= 100 or not 0 <= percentiles[1] <= 100:
+            raise InvalidPostProcessingError(
+                _("percentiles must be values in the range [0, 100]")
+            )
         low, high = percentiles[0], percentiles[1]
 
         def whisker_high(series: Series) -> float:
